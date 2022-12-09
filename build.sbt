@@ -29,22 +29,13 @@ ThisBuild / javaOptions += "-Xmx1024m"
 // The root project is a virtual project aggregating the other projects.
 // It cannot compile, as necessary utility code is only in those projects.
 lazy val root = (project in file("."))
-  .aggregate(spark2_4, spark3_0, spark3_1)
+  .aggregate(spark3_1)
   .settings(
     compile / skip := true,
     publish / skip := true,
     Keys.`package` := { new File("") }, // skip package
     Keys.`packageBin` := { new File("") } // skip packageBin
   )
-
-lazy val spark2_4 = (project in file("spark2.4"))
-  .enablePlugins(BuildInfoPlugin)
-  .settings(
-    commonSettings,
-    sparkVersion := Version(2, 4, 2),
-    crossScalaVersions := List(scala212, scala211),
-    inConfig(Compile)(addSparkVersionSpecificSourceDirectories),
-    inConfig(Test)(addSparkVersionSpecificSourceDirectories))
 
 lazy val spark3_0 = (project in file("spark3.0"))
   .enablePlugins(BuildInfoPlugin)
@@ -97,12 +88,7 @@ lazy val commonSettings = Seq(
   testScalastyle := (Test / scalastyle).toTask("").value,
   Test / test := ((Test / test) dependsOn testScalastyle).value,
 
-  // Package Python files
-  (Compile / packageBin / mappings) := (Compile / packageBin / mappings).value ++ listPythonFiles.value,
-  listPythonFiles := {
-    val pythonBase = (ThisBuild / baseDirectory).value / "python"
-    pythonBase ** "*.py" pair relativeTo(pythonBase)
-  })
+)
 
 lazy val listPythonFiles = taskKey[Seq[(File, String)]]("listPythonFiles")
 
